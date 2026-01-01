@@ -1,18 +1,28 @@
-// next.config.js
 /** @type {import('next').NextConfig} */
 
 const isDev = process.env.NODE_ENV === "development";
-const backendUrl = isDev ? "http://localhost:5000" : process.env.BACKEND_URL;
+const backendUrl = isDev
+  ? "http://localhost:5000"
+  : process.env.NEXT_PUBLIC_API_URL;
 
 const nextConfig = {
   productionBrowserSourceMaps: false,
 
   async rewrites() {
+    if (!backendUrl) {
+      console.warn("NEXT_PUBLIC_API_URL is not set — skipping rewrite");
+      return [];
+    }
+
+    const normalizedApiUrl =
+      backendUrl.startsWith("http://") || backendUrl.startsWith("https://")
+        ? backendUrl
+        : `https://${backendUrl}`;
+
     return [
       {
-        // Proxy ALL /api/* requests to backend
         source: "/api/:path*",
-        destination: `${backendUrl}/api/:path*`,
+        destination: `${normalizedApiUrl.replace(/\/$/, "")}/api/:path*`,
       },
     ];
   },
