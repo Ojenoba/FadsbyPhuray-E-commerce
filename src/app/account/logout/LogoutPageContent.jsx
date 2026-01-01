@@ -2,23 +2,22 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthProvider";
 
 export default function LogoutPageContent() {
   const { logout } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    const doLogout = async () => {
+    (async () => {
       try {
-        await logout(); // ✅ call your AuthProvider logout
-        router.push("/account/signin"); // redirect to login page
+        await logout();
+        router.push("/account/signin");
       } catch (err) {
         console.error("Logout failed:", err);
+        router.push("/account/signin");
       }
-    };
-
-    doLogout();
+    })();
   }, [logout, router]);
 
   return (
