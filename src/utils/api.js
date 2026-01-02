@@ -46,6 +46,7 @@ export const api = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ product_id: productId, quantity }),
+      credentials: "include", // ensure cookie/session is included
     });
     if (!res.ok) throw new Error("Failed to add to cart");
     return res.json();
@@ -57,12 +58,16 @@ export const api = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ product_id: productId }),
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Failed to add to wishlist");
     return res.json();
   },
   removeFromWishlist: async (productId) => {
-    const res = await fetch(`${BASE_URL}/wishlist/${productId}`, { method: "DELETE" });
+    const res = await fetch(`${BASE_URL}/wishlist/${productId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
     if (!res.ok) throw new Error("Failed to remove from wishlist");
     return res.json();
   },
@@ -71,7 +76,7 @@ export const api = {
   login: async ({ email, password, isAdmin }) => {
     const url = isAdmin
       ? `${BASE_URL}/admin/login`
-      : `${BASE_URL}/auth/signin`; // ✅ no extra /api
+      : `${BASE_URL}/auth/login`; // ✅ match backend route
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -81,18 +86,28 @@ export const api = {
     if (!res.ok) throw new Error("Login failed");
     return res.json();
   },
-  register: async ({ name, email, password }) => {
-    const res = await fetch(`${BASE_URL}/auth/signup`, { // ✅ no extra /api
+  register: async ({ username, email, password }) => {
+    const res = await fetch(`${BASE_URL}/auth/signup`, { // ✅ matches backend route
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ username, email, password }),
     });
     if (!res.ok) throw new Error("Registration failed");
     return res.json();
   },
   logout: async () => {
-    const res = await fetch(`${BASE_URL}/auth/logout`, { method: "POST", credentials: "include" }); // ✅ no extra /api
+    const res = await fetch(`${BASE_URL}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
     if (!res.ok) throw new Error("Logout failed");
+    return res.json();
+  },
+
+  // 👤 Session
+  getSession: async () => {
+    const res = await fetch(`${BASE_URL}/auth/me`, { credentials: "include" });
+    if (!res.ok) throw new Error("Session check failed");
     return res.json();
   },
 };
