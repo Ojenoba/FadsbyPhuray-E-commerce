@@ -38,7 +38,7 @@ export const api = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ productId, rating, reviewText }),
-      credentials: "include", // 🔑 include cookies if needed
+      credentials: "include", // 🔑 include cookies
     });
     if (!res.ok) throw new Error("Failed to submit review");
     return res.json();
@@ -83,17 +83,18 @@ export const api = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
-      credentials: "include",
+      credentials: "include", // 🔑 cookie set on login
     });
     if (!res.ok) throw new Error("Login failed");
     return res.json();
   },
 
   register: async ({ username, email, password }) => {
-    const res = await fetch(`${BASE_URL}/auth/signup`, {
+    const res = await fetch(`${BASE_URL}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, email, password }),
+      credentials: "include", // 🔑 cookie set on signup
     });
     if (!res.ok) throw new Error("Registration failed");
     return res.json();

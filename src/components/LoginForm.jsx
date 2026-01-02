@@ -9,7 +9,7 @@ export default function LoginForm() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { login } = useAuth(); // ✅ calls api.login
+  const { login } = useAuth(); // ✅ now calls api.login + api.getSession
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,8 +36,17 @@ export default function LoginForm() {
     setError("");
 
     try {
-      await login(email, password); // ✅ always user login
-      router.push("/dashboard");
+      // ✅ login now fetches session and sets user in context
+      const user = await login(email, password);
+
+      // Redirect based on role
+      if (isAdmin && user.role !== "admin") {
+        setError("Admins only — access denied");
+        setErrorType("danger");
+        return;
+      }
+
+      router.push(isAdmin ? "/admin/dashboard" : "/dashboard");
     } catch (err) {
       setError(err.message || "Login failed");
       setErrorType("danger");

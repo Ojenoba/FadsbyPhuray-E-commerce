@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
-import { api } from "@/utils/api"; // ✅ use central api.js
+import { api } from "@/utils/api"; // ✅ central api.js
 
 const AuthContext = createContext(null);
 
@@ -26,15 +26,20 @@ export function AuthProvider({ children }) {
 
   // 🔑 User login
   const login = async (email, password) => {
-    const data = await api.login({ email, password }); // ✅ calls /auth/login
-    setUser(data.user);
-    return data.user;
+    // Step 1: perform login (sets cookie)
+    await api.login({ email, password });
+
+    // Step 2: immediately fetch session to confirm cookie and get user
+    const session = await api.getSession();
+    setUser(session.user);
+
+    return session.user;
   };
 
   // 🔑 User logout
   const logout = async () => {
     try {
-      await api.logout(); // ✅ calls /auth/logout
+      await api.logout(); // ✅ clears cookie
     } finally {
       setUser(null);
     }
