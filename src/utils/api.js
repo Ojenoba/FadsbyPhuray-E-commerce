@@ -7,11 +7,13 @@ export const api = {
     if (!res.ok) throw new Error("Failed to fetch products");
     return res.json();
   },
+
   getProductById: async (id) => {
     const res = await fetch(`${BASE_URL}/products/${id}`, { cache: "no-store" });
     if (!res.ok) throw new Error("Failed to fetch product");
     return res.json();
   },
+
   getRelatedProducts: async (id) => {
     const res = await fetch(`${BASE_URL}/products/related/${id}`, { cache: "no-store" });
     if (!res.ok) throw new Error("Failed to fetch related products");
@@ -30,11 +32,13 @@ export const api = {
     if (!res.ok) throw new Error("Failed to fetch reviews");
     return res.json();
   },
+
   submitReview: async ({ productId, rating, reviewText }) => {
     const res = await fetch(`${BASE_URL}/reviews`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ productId, rating, reviewText }),
+      credentials: "include", // 🔑 include cookies if needed
     });
     if (!res.ok) throw new Error("Failed to submit review");
     return res.json();
@@ -46,7 +50,7 @@ export const api = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ product_id: productId, quantity }),
-      credentials: "include",
+      credentials: "include", // 🔑 ensures JWT cookie is sent
     });
     if (!res.ok) throw new Error("Failed to add to cart");
     return res.json();
@@ -63,6 +67,7 @@ export const api = {
     if (!res.ok) throw new Error("Failed to add to wishlist");
     return res.json();
   },
+
   removeFromWishlist: async (productId) => {
     const res = await fetch(`${BASE_URL}/wishlist/${productId}`, {
       method: "DELETE",
@@ -83,6 +88,7 @@ export const api = {
     if (!res.ok) throw new Error("Login failed");
     return res.json();
   },
+
   register: async ({ username, email, password }) => {
     const res = await fetch(`${BASE_URL}/auth/signup`, {
       method: "POST",
@@ -92,6 +98,7 @@ export const api = {
     if (!res.ok) throw new Error("Registration failed");
     return res.json();
   },
+
   logout: async () => {
     const res = await fetch(`${BASE_URL}/auth/logout`, {
       method: "POST",
@@ -100,6 +107,7 @@ export const api = {
     if (!res.ok) throw new Error("Logout failed");
     return res.json();
   },
+
   getSession: async () => {
     const res = await fetch(`${BASE_URL}/auth/me`, { credentials: "include" });
     if (!res.ok) throw new Error("Session check failed");
@@ -117,6 +125,7 @@ export const api = {
     if (!res.ok) throw new Error("Admin login failed");
     return res.json();
   },
+
   adminLogout: async () => {
     const res = await fetch(`${BASE_URL}/admin/logout`, {
       method: "POST",
@@ -125,6 +134,7 @@ export const api = {
     if (!res.ok) throw new Error("Admin logout failed");
     return res.json();
   },
+
   getAdminSession: async () => {
     const res = await fetch(`${BASE_URL}/admin/me`, { credentials: "include" });
     if (!res.ok) throw new Error("Admin session check failed");
