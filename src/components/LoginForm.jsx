@@ -3,13 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import { useAuth } from "@/context/AuthProvider";
+import { useAuth } from "@/context/AuthProvider"; // ✅ user context
 
 export default function LoginForm() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { login } = useAuth(); // ✅ calls api.login
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,11 +36,10 @@ export default function LoginForm() {
     setError("");
 
     try {
-      // ✅ delegate to AuthProvider
-      await login(email, password, isAdmin);
-      router.push(isAdmin ? "/admin" : "/dashboard");
+      await login(email, password); // ✅ always user login
+      router.push("/dashboard");
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Login failed");
       setErrorType("danger");
     }
   };

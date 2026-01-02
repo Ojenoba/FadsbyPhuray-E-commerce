@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
+import { api } from "@/utils/api"; // ✅ use central api.js
 
 const AuthContext = createContext(null);
 
@@ -8,24 +9,13 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-
   // 🔎 Check session on mount
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/auth/me`, {
-          method: "GET",
-          credentials: "include",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        } else {
-          setUser(null);
-        }
-      } catch (err) {
-        console.error("Error fetching session:", err);
+        const data = await api.getSession(); // ✅ calls /auth/me
+        setUser(data.user);
+      } catch {
         setUser(null);
       } finally {
         setLoading(false);
@@ -34,36 +24,17 @@ export function AuthProvider({ children }) {
     fetchSession();
   }, []);
 
-  // 🔑 Login (supports normal + admin)
-  const login = async (email, password, isAdmin = false) => {
-    const endpoint = isAdmin ? "/admin/login" : "/auth/login";
-
-    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-      credentials: "include",
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || "Login failed");
-    }
-
+  // 🔑 User login
+  const login = async (email, password) => {
+    const data = await api.login({ email, password }); // ✅ calls /auth/login
     setUser(data.user);
     return data.user;
   };
 
-  // 🔑 Logout
+  // 🔑 User logout
   const logout = async () => {
     try {
-      await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch (err) {
-      console.error("Error logging out:", err);
+      await api.logout(); // ✅ calls /auth/logout
     } finally {
       setUser(null);
     }

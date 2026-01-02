@@ -10,17 +10,17 @@ export default function AdminLoginForm() {
   const [error, setError] = useState(null);
   const router = useRouter();
 
-  const { loginAdmin } = useAdminAuth();
+  const { loginAdmin } = useAdminAuth(); // ✅ calls api.adminLogin
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
 
     try {
-      await loginAdmin(email, password); // ✅ calls /api/admin/login
-      router.push("/admin"); // redirect to Admin Dashboard
-    } catch {
-      setError("Invalid admin credentials");
+      await loginAdmin(email, password);
+      router.push("/admin"); // ✅ redirect to Admin Dashboard
+    } catch (err) {
+      setError(err.message || "Invalid admin credentials");
     }
   };
 

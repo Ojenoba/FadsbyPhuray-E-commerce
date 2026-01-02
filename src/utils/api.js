@@ -46,7 +46,7 @@ export const api = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ product_id: productId, quantity }),
-      credentials: "include", // ensure cookie/session is included
+      credentials: "include",
     });
     if (!res.ok) throw new Error("Failed to add to cart");
     return res.json();
@@ -72,12 +72,9 @@ export const api = {
     return res.json();
   },
 
-  // 🔑 Auth
-  login: async ({ email, password, isAdmin }) => {
-    const url = isAdmin
-      ? `${BASE_URL}/admin/login`
-      : `${BASE_URL}/auth/login`; // ✅ match backend route
-    const res = await fetch(url, {
+  // 🔑 Auth (Users)
+  login: async ({ email, password }) => {
+    const res = await fetch(`${BASE_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -87,7 +84,7 @@ export const api = {
     return res.json();
   },
   register: async ({ username, email, password }) => {
-    const res = await fetch(`${BASE_URL}/auth/signup`, { // ✅ matches backend route
+    const res = await fetch(`${BASE_URL}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, email, password }),
@@ -103,11 +100,34 @@ export const api = {
     if (!res.ok) throw new Error("Logout failed");
     return res.json();
   },
-
-  // 👤 Session
   getSession: async () => {
     const res = await fetch(`${BASE_URL}/auth/me`, { credentials: "include" });
     if (!res.ok) throw new Error("Session check failed");
+    return res.json();
+  },
+
+  // 🔑 Admin
+  adminLogin: async ({ email, password }) => {
+    const res = await fetch(`${BASE_URL}/admin/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error("Admin login failed");
+    return res.json();
+  },
+  adminLogout: async () => {
+    const res = await fetch(`${BASE_URL}/admin/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error("Admin logout failed");
+    return res.json();
+  },
+  getAdminSession: async () => {
+    const res = await fetch(`${BASE_URL}/admin/me`, { credentials: "include" });
+    if (!res.ok) throw new Error("Admin session check failed");
     return res.json();
   },
 };

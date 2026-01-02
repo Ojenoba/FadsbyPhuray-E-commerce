@@ -1,5 +1,7 @@
 "use client";
+
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { api } from "@/utils/api"; // ✅ use central api.js
 
 const AdminAuthContext = createContext(null);
 
@@ -12,18 +14,12 @@ export function AdminAuthProvider({ children }) {
     checkAdminAuth();
   }, []);
 
-  // 🔑 Call backend /api/admin/me to verify current admin
+  // 🔎 Verify current admin session
   const checkAdminAuth = async () => {
     try {
-      const res = await fetch("/api/admin/me", { credentials: "include" });
-      if (res.ok) {
-        const data = await res.json();
-        setAdmin(data.user); // ✅ backend returns { user }
-        setStatus("authenticated");
-      } else {
-        setAdmin(null);
-        setStatus("unauthenticated");
-      }
+      const data = await api.getAdminSession(); // ✅ calls /admin/me
+      setAdmin(data.user);
+      setStatus("authenticated");
     } catch {
       setAdmin(null);
       setStatus("unauthenticated");
@@ -32,29 +28,15 @@ export function AdminAuthProvider({ children }) {
 
   // 🔑 Admin login
   const loginAdmin = async (email, password) => {
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-      credentials: "include", // ✅ ensures cookie is saved
-    });
-
-    const data = await res.json();
-
-    if (res.ok && data.success) {
-      setAdmin(data.user); // ✅ backend returns { user }
-      setStatus("authenticated");
-    } else {
-      throw new Error(data.error || "Admin login failed");
-    }
+    const data = await api.adminLogin({ email, password }); // ✅ calls /admin/login
+    setAdmin(data.user);
+    setStatus("authenticated");
+    return data.user;
   };
 
   // 🔑 Admin logout
   const logoutAdmin = async () => {
-    await fetch("/api/admin/logout", {
-      method: "POST",
-      credentials: "include",
-    });
+    await api.adminLogout(); // ✅ calls /admin/logout
     setAdmin(null);
     setStatus("unauthenticated");
   };
