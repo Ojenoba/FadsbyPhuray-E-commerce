@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
-import { api } from "@/utils/api"; // ✅ central api.js
+import { api } from "@/utils/api"; // central api.js
 
 const AuthContext = createContext(null);
 
@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const data = await api.getSession(); // ✅ calls /auth/me
+        const data = await api.getSession(); // calls /auth/me
         setUser(data.user);
       } catch {
         setUser(null);
@@ -26,20 +26,23 @@ export function AuthProvider({ children }) {
 
   // 🔑 User login
   const login = async (email, password) => {
-    // Step 1: perform login (sets cookie)
-    await api.login({ email, password });
+    try {
+      // Step 1: perform login (sets cookie)
+      await api.login({ email, password });
 
-    // Step 2: immediately fetch session to confirm cookie and get user
-    const session = await api.getSession();
-    setUser(session.user);
-
-    return session.user;
+      // Step 2: immediately fetch session to confirm cookie and get user
+      const session = await api.getSession();
+      setUser(session.user);
+      return session.user;
+    } catch (error) {
+      throw new Error(error.message || "Login failed");
+    }
   };
 
   // 🔑 User logout
   const logout = async () => {
     try {
-      await api.logout(); // ✅ clears cookie
+      await api.logout(); // clears cookie
     } finally {
       setUser(null);
     }
