@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Menu, X, ShoppingBag, Heart, User, Search } from "lucide-react";
+import { Menu, X, ShoppingBag, Heart, Search } from "lucide-react";
 import { useAuth } from "@/context/AuthProvider";
 import { useCart } from "@/context/CartContext";
 
@@ -12,7 +12,7 @@ export default function Navbar() {
   const [cartOpen, setCartOpen] = useState(false);
   const cartRef = useRef(null);
 
-  const { isLoggedIn, user, logout, status } = useAuth();
+  const { isLoggedIn, user, logout, loading } = useAuth();
   const { cartItems, cartCount, cartTotal } = useCart();
 
   // Close mini cart when clicking outside
@@ -139,7 +139,7 @@ export default function Navbar() {
           </div>
 
           {/* Auth */}
-          {status === "loading" ? (
+          {loading ? (
             <span className="text-gray-500">Loading...</span>
           ) : isLoggedIn ? (
             <>
@@ -148,7 +148,10 @@ export default function Navbar() {
                   Admin
                 </Link>
               )}
-              <button onClick={logout} className="text-red-600 hover:text-red-800 font-medium">
+              <button
+                onClick={logout}
+                className="text-red-600 hover:text-red-800 font-medium"
+              >
                 Sign Out
               </button>
             </>
@@ -218,7 +221,7 @@ export default function Navbar() {
               )}
             </Link>
 
-            {status === "loading" ? (
+            {loading ? (
               <span className="text-gray-500">Loading...</span>
             ) : isLoggedIn ? (
               <>
