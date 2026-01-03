@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
-import { api } from "@/utils/api"; // central api.js
+import { api } from "@/utils/api";
 
 const AuthContext = createContext(null);
 
@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔎 Check session on mount
+  // 🔎 Check user session on mount
   useEffect(() => {
     const fetchSession = async () => {
       try {
@@ -26,25 +26,26 @@ export function AuthProvider({ children }) {
 
   // 🔑 User login
   const login = async (email, password) => {
-    try {
-      // Step 1: perform login (sets cookie)
-      await api.login({ email, password });
-
-      // Step 2: immediately fetch session to confirm cookie and get user
-      const session = await api.getSession();
-      setUser(session.user);
-      return session.user;
-    } catch (error) {
-      throw new Error(error.message || "Login failed");
-    }
+    await api.login({ email, password });
+    const session = await api.getSession();
+    setUser(session.user);
+    return session.user;
   };
 
   // 🔑 User logout
   const logout = async () => {
+    await api.logout();
+    setUser(null);
+  };
+
+  // 🔎 Optional: check admin session only when needed
+  const checkAdminSession = async () => {
     try {
-      await api.logout(); // clears cookie
-    } finally {
-      setUser(null);
+      const data = await api.getAdminSession(); // calls /admin/me
+      setUser(data.user);
+      return data.user;
+    } catch {
+      return null;
     }
   };
 
@@ -58,6 +59,7 @@ export function AuthProvider({ children }) {
       loading,
       login,
       logout,
+      checkAdminSession, // expose admin check separately
     };
   }, [user, loading]);
 
