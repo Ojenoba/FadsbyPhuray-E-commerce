@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useApiClient } from "@/utils/apiClient";
 import { useAuth } from "@/context/AuthProvider";
 import {
   ArrowLeft,
@@ -53,23 +54,15 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const walletRes = await fetch("/api/wallet", { credentials: "include" });
-        if (walletRes.ok) {
-          const data = await walletRes.json();
-          setWallet(data.wallet);
-        }
+        const { apiClient } = useApiClient();
+        const walletData = await apiClient("/wallet");
+        setWallet(walletData?.wallet || null);
 
-        const ordersRes = await fetch("/api/orders", { credentials: "include" });
-        if (ordersRes.ok) {
-          const data = await ordersRes.json();
-          setOrders(data.data || []);
-        }
+        const ordersData = await apiClient("/orders");
+        setOrders(ordersData?.data || ordersData?.orders || []);
 
-        const referralsRes = await fetch("/api/referrals", { credentials: "include" });
-        if (referralsRes.ok) {
-          const data = await referralsRes.json();
-          setReferrals(data || null);
-        }
+        const referralsData = await apiClient("/referrals");
+        setReferrals(referralsData || null);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -89,13 +82,9 @@ export default function DashboardPage() {
     }
     try {
       setSearchLoading(true);
-      const res = await fetch(`/api/products/search/${encodeURIComponent(searchQuery)}`, {
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSearchResults(data.data || []);
-      }
+      const { apiClient } = useApiClient();
+      const data = await apiClient(`/products/search/${encodeURIComponent(searchQuery)}`);
+      setSearchResults(data?.data || []);
     } catch (err) {
       console.error("Search error:", err);
     } finally {

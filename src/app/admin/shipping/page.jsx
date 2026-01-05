@@ -32,7 +32,7 @@ export default function AdminShippingPage() {
   const fetchShippingRates = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/shipping", { credentials: "include" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shipping`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch shipping rates");
       const data = await res.json();
       setShippingRates(data.rates || []);
@@ -54,8 +54,8 @@ export default function AdminShippingPage() {
     try {
       const method = editingRate ? "PUT" : "POST";
       const url = editingRate
-        ? `/api/shipping/${editingRate._id || editingRate.id}`
-        : "/api/shipping";
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api/shipping/${editingRate._id || editingRate.id}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/api/shipping`;
 
       const res = await fetch(url, {
         method,
@@ -100,7 +100,7 @@ export default function AdminShippingPage() {
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this shipping rate?")) return;
     try {
-      const res = await fetch(`/api/shipping/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shipping/${id}`, {
         method: "DELETE",
         credentials: "include",
       });

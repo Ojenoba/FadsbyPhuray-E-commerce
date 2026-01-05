@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Eye } from "lucide-react";
 import useUser from "@/utils/useUser";
+import { useApiClient } from "@/utils/apiClient";
 
 export default function OrdersPage() {
   const { data: user, loading } = useUser();
@@ -22,10 +23,12 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch("/api/orders");
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data.orders || []);
+      try {
+        const { apiClient } = useApiClient();
+        const data = await apiClient("/orders");
+        setOrders(data?.orders || data?.data || []);
+      } catch (err) {
+        console.error(err);
       }
     } catch (error) {
       console.error("Error fetching orders:", error);

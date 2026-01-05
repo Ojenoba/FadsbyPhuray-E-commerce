@@ -1,28 +1,29 @@
 // src/app/payment/callback/page.jsx
 "use client";
 import { useEffect, useState } from "react";
+import { useApiClient } from "@/utils/apiClient";
 
 export default function PaymentCallbackPage() {
   const [status, setStatus] = useState("loading");
+
+  const { apiClient } = useApiClient();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const transactionId = params.get("transaction_id");
 
-    if (transactionId) {
-      fetch(`/api/payments/verify?transaction_id=${transactionId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.status === "success") {
-            setStatus("success");
-          } else {
-            setStatus("error");
-          }
-        })
-        .catch(() => setStatus("error"));
-    } else {
-      setStatus("error");
-    }
+    const verify = async () => {
+      if (!transactionId) return setStatus("error");
+      try {
+        const data = await apiClient(`/api/payments/verify?transaction_id=${transactionId}`);
+        if (data && data.status === "success") setStatus("success");
+        else setStatus("error");
+      } catch (e) {
+        setStatus("error");
+      }
+    };
+
+    verify();
   }, []);
 
   return (

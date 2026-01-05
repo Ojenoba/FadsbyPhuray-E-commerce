@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "../../context/AuthProvider";
+import { useApiClient } from "@/utils/apiClient";
 import { useState, useEffect } from "react";
 import { ArrowLeft, Heart, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -27,16 +28,13 @@ export default function WishlistPage() {
 
   const fetchWishlist = async () => {
     try {
-      const res = await fetch("/api/wishlist", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setWishlist(data.wishlist || []);
+      try {
+        const { apiClient } = useApiClient();
+        const data = await apiClient("/wishlist");
+        if (data && !data.success) throw new Error(data.error || "Failed to fetch wishlist");
+        setWishlist(data.wishlist || data.data || []);
+      } catch (error) {
+        console.error(error);
       }
     } catch (error) {
       console.error("Error fetching wishlist:", error);
@@ -48,16 +46,17 @@ export default function WishlistPage() {
   const handleAddToCart = async (productId) => {
     if (isLoggedIn && user?.id) {
       try {
-        const res = await fetch("/api/cart", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-          body: JSON.stringify({ product_id: productId, quantity: 1 }),
-          credentials: "include",
-        });
-        if (res.ok) alert("Added to cart!");
+        try {
+          const { apiClient } = useApiClient();
+          const resp = await apiClient("/cart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ product_id: productId, quantity: 1 }),
+          });
+          if (resp && resp.success) alert("Added to cart!");
+        } catch (err) {
+          console.error(err);
+        }
       } catch (error) {
         console.error("Error adding to cart:", error);
       }
@@ -74,16 +73,12 @@ export default function WishlistPage() {
   const handleRemoveFromWishlist = async (itemId) => {
     if (isLoggedIn && user?.id) {
       try {
-        const res = await fetch(`/api/wishlist/${itemId}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-          credentials: "include",
-        });
-        if (res.ok) {
-          setWishlist(wishlist.filter((item) => item.id !== itemId));
+        try {
+          const { apiClient } = useApiClient();
+          const resp = await apiClient(`/wishlist/${itemId}`, { method: "DELETE" });
+          if (resp && resp.success) setWishlist(wishlist.filter((item) => item.id !== itemId));
+        } catch (err) {
+          console.error(err);
         }
       } catch (error) {
         console.error("Error removing from wishlist:", error);

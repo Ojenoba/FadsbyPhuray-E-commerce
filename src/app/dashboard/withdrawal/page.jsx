@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Send } from "lucide-react";
 import useUser from "@/utils/useUser";
+import { useApiClient } from "@/utils/apiClient";
 
 export default function WithdrawalPage() {
   const { data: user, loading } = useUser();
@@ -32,11 +33,9 @@ export default function WithdrawalPage() {
 
   const fetchWallet = async () => {
     try {
-      const res = await fetch("/api/wallet");
-      if (res.ok) {
-        const data = await res.json();
-        setWallet(data.wallet);
-      }
+      const { apiClient } = useApiClient();
+      const data = await apiClient("/wallet");
+      setWallet(data?.wallet || null);
     } catch (error) {
       console.error("Error fetching wallet:", error);
     }
@@ -44,11 +43,9 @@ export default function WithdrawalPage() {
 
   const fetchWithdrawals = async () => {
     try {
-      const res = await fetch("/api/withdrawals");
-      if (res.ok) {
-        const data = await res.json();
-        setWithdrawals(data.withdrawals || []);
-      }
+      const { apiClient } = useApiClient();
+      const data = await apiClient("/withdrawals");
+      setWithdrawals(data?.withdrawals || data?.data || []);
     } catch (error) {
       console.error("Error fetching withdrawals:", error);
     }
@@ -77,7 +74,8 @@ export default function WithdrawalPage() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/withdrawals", {
+      const { apiClient } = useApiClient();
+      const resp = await apiClient("/withdrawals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -89,7 +87,7 @@ export default function WithdrawalPage() {
         }),
       });
 
-      if (res.ok) {
+      if (resp && resp.success) {
         alert("Withdrawal request submitted successfully!");
         setFormData({
           amount: "",
@@ -102,8 +100,7 @@ export default function WithdrawalPage() {
         fetchWallet();
         fetchWithdrawals();
       } else {
-        const error = await res.json();
-        alert(error.error || "Error submitting withdrawal request");
+        alert(resp.error || "Error submitting withdrawal request");
       }
     } catch (error) {
       console.error("Error:", error);

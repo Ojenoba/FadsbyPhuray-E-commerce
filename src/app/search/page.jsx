@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useApiClient } from "@/utils/apiClient";
 import { ArrowLeft, Search, Filter } from "lucide-react";
 import useUser from "@/utils/useUser";
 
@@ -19,15 +20,11 @@ export default function SearchPage() {
     // Get all categories
     const fetchCategories = async () => {
       try {
-        const res = await fetch("/api/products");
-        if (res.ok) {
-          const data = await res.json();
-          // Backend returns { success, data: [...] }
-          const cats = [
-            ...new Set((data.data || []).map((p) => p.category).filter(Boolean)),
-          ];
-          setCategories(cats);
-        }
+        const { apiClient } = useApiClient();
+        const data = await apiClient("/products");
+        const arr = data?.data || [];
+        const cats = [...new Set(arr.map((p) => p.category).filter(Boolean))];
+        setCategories(cats);
       } catch (error) {
         console.error("Error fetching categories:", error);
       }
@@ -47,14 +44,9 @@ export default function SearchPage() {
         if (maxPrice) params.append("maxPrice", maxPrice);
         if (sortBy) params.append("sort", sortBy);
 
-        const res = await fetch(`/api/products/search?${params}`);
-        if (res.ok) {
-          const data = await res.json();
-          // Backend returns { success, data: [...] }
-          setProducts(data.data || []);
-        } else {
-          setProducts([]);
-        }
+        const { apiClient } = useApiClient();
+        const data = await apiClient(`/products/search?${params}`);
+        setProducts(data?.data || []);
       } catch (error) {
         console.error("Search error:", error);
         setProducts([]);
@@ -74,17 +66,17 @@ export default function SearchPage() {
     }
 
     try {
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id: productId, quantity: 1 }),
-      });
-
-      if (res.ok) {
-        alert("Added to cart!");
-      } else {
-        alert("Failed to add to cart");
-      }
+        const { apiClient } = useApiClient();
+        const resp = await apiClient("/cart", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: productId, quantity: 1 }),
+        });
+        if (resp && resp.success) {
+          alert("Added to cart!");
+        } else {
+          alert(resp.error || "Failed to add to cart");
+        }
     } catch (error) {
       console.error("Error adding to cart:", error);
       alert("Error adding to cart");

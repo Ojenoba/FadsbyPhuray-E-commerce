@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useApiClient } from "@/utils/apiClient";
 import { Heart, Trash2 } from "lucide-react";
 import useUser from "@/utils/useUser";
 
@@ -19,7 +20,7 @@ export default function WishlistView() {
 
   const fetchWishlist = async () => {
     try {
-      const res = await fetch("/api/wishlist");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/wishlist`, { credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setWishlist(data.data || []); // ✅ use data.data
@@ -33,10 +34,11 @@ export default function WishlistView() {
 
   const handleAddToCart = async (productId) => {
     try {
-      const res = await fetch("/api/cart", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cart`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
+        credentials: "include",
       });
       if (res.ok) {
         alert("Added to cart!");
@@ -48,7 +50,7 @@ export default function WishlistView() {
 
   const handleRemoveFromWishlist = async (itemId) => {
     try {
-      const res = await fetch(`/api/wishlist/${itemId}`, { method: "DELETE" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/wishlist/${itemId}`, { method: "DELETE", credentials: "include" });
       if (res.ok) {
         setWishlist(wishlist.filter((item) => item._id !== itemId));
       }
@@ -58,10 +60,10 @@ export default function WishlistView() {
   };
 
   if (loading) return <div className="text-center py-8">Loading...</div>;
-  if (!user) return null;
-
-  if (wishlistLoading) {
-    return <div className="text-center py-12 text-[#666]">Loading wishlist...</div>;
+      const { apiClient } = useApiClient();
+      const data = await apiClient("/wishlist");
+      if (data && !data.success) throw new Error(data.error || "Failed to fetch wishlist");
+      setWishlist((data && (data.data || data.wishlist)) || []);
   }
 
   if (wishlist.length === 0) {
@@ -71,14 +73,14 @@ export default function WishlistView() {
         <p className="text-[#666] mb-4">Your wishlist is empty</p>
         <button
           onClick={() => (window.location.href = "/products")}
-          className="inline-block px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-semibold hover:bg-[#E55A24] transition-colors"
-        >
-          Continue Shopping
-        </button>
-      </div>
-    );
-  }
-
+      try {
+        const { apiClient } = useApiClient();
+        const resp = await apiClient("/cart", {
+          method: "POST",
+          body: JSON.stringify({ product_id: productId, quantity: 1 }),
+          headers: { "Content-Type": "application/json" },
+        });
+        if (resp && resp.success) alert("Added to cart!");
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {wishlist.map((item) => (
@@ -86,9 +88,10 @@ export default function WishlistView() {
           key={item._id} // ✅ use MongoDB _id
           className="bg-white rounded-lg border-2 border-[#E8D4C4] overflow-hidden hover:shadow-lg transition-shadow"
         >
-          <a href={`/products/${item.product_id}`}>
-            {item.image_url && (
-              <img
+      try {
+        const { apiClient } = useApiClient();
+        const resp = await apiClient(`/wishlist/${itemId}`, { method: "DELETE" });
+        if (resp && resp.success) setWishlist(wishlist.filter((item) => item._id !== itemId));
                 src={item.image_url}
                 alt={item.name}
                 className="w-full h-48 object-cover hover:opacity-90 transition-opacity"

@@ -39,7 +39,7 @@ export default function ProductsAdminPage() {
   } = useQuery({
     queryKey: ["admin-products"],
     queryFn: async () => {
-      const res = await fetch("/api/products", { credentials: "include" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch products");
       const json = await res.json();
       // Backend returns { success, data } — normalize to array
@@ -52,7 +52,7 @@ export default function ProductsAdminPage() {
   const productMutation = useMutation({
     mutationFn: async (productData) => {
       const id = editingProduct?._id || editingProduct?.id;
-      const url = editingProduct ? `/api/products/${id}` : "/api/products";
+      const url = editingProduct ? `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}` : `${process.env.NEXT_PUBLIC_API_URL}/api/products`;
       const method = editingProduct ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -80,7 +80,7 @@ export default function ProductsAdminPage() {
   // ✅ Delete product mutation
   const deleteMutation = useMutation({
     mutationFn: async (productId) => {
-      const res = await fetch(`/api/products/${productId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${productId}`, {
         method: "DELETE",
         credentials: "include",
       });

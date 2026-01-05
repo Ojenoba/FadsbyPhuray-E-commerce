@@ -29,7 +29,7 @@ export default function OrdersAdminPage() {
   } = useQuery({
     queryKey: ["admin-orders"],
     queryFn: async () => {
-      const res = await fetch("/api/orders", { credentials: "include" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch orders");
       const data = await res.json();
       return Array.isArray(data) ? data : data.data || [];
@@ -41,7 +41,9 @@ export default function OrdersAdminPage() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, status }) => {
       const endpoint =
-        status === "shipped" ? `/api/orders/${id}/ship` : `/api/orders/${id}/status`;
+        status === "shipped"
+          ? `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${id}/ship`
+          : `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${id}/status`;
       const res = await fetch(endpoint, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -62,7 +64,7 @@ export default function OrdersAdminPage() {
   // ✅ Cancel order
   const cancelMutation = useMutation({
     mutationFn: async (id) => {
-      const res = await fetch(`/api/orders/${id}/cancel`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/${id}/cancel`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

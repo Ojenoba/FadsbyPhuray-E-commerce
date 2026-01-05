@@ -95,7 +95,7 @@ export default function AdminEmailsPage() {
     }
 
     try {
-      const res = await fetch("/api/admin/emails", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/emails`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -107,6 +107,7 @@ export default function AdminEmailsPage() {
           subject: formData.subject.trim(),
           body: formData.body.trim(),
         }),
+        credentials: "include",
       });
 
       if (!res.ok) {

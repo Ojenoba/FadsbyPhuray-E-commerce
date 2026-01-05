@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import useUser from "@/utils/useUser";
+import { useApiClient } from "@/utils/apiClient";
 
 export default function OrderDetailPage({ params }) {
   const { data: user, loading: userLoading } = useUser();
@@ -31,11 +32,9 @@ export default function OrderDetailPage({ params }) {
 
   const fetchOrder = async () => {
     try {
-      const res = await fetch(`/api/orders/${params.id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setOrder(data.order);
-      }
+      const { apiClient } = useApiClient();
+      const data = await apiClient(`/orders/${params.id}`);
+      setOrder(data?.order || data?.data || null);
     } catch (error) {
       console.error("Error fetching order:", error);
     } finally {
@@ -51,7 +50,8 @@ export default function OrderDetailPage({ params }) {
     }
 
     try {
-      const res = await fetch("/api/returns", {
+      const { apiClient } = useApiClient();
+      const resp = await apiClient("/returns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -61,8 +61,7 @@ export default function OrderDetailPage({ params }) {
           description: returnData.description,
         }),
       });
-
-      if (res.ok) {
+      if (resp && resp.success) {
         alert("Return request submitted!");
         setShowReturnForm(false);
         setReturnItem(null);

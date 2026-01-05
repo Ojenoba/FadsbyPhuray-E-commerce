@@ -1,6 +1,7 @@
 "use client";
 import React, { createContext, useContext, useReducer, useEffect } from "react";
 import { useAuth } from "@/context/AuthProvider";
+import { useApiClient } from "@/utils/apiClient";
 
 const CartContext = createContext(null);
 
@@ -68,17 +69,15 @@ function cartReducer(state, action) {
 
 export function CartProvider({ children }) {
   const { isLoggedIn, user, token } = useAuth();
+  const { apiClient } = useApiClient();
   const [cartItems, dispatch] = useReducer(cartReducer, []);
 
   // Load cart from API or localStorage
   useEffect(() => {
     const fetchCart = async () => {
       if (isLoggedIn && user?.id) {
-        const res = await fetch(`/api/cart?userId=${user.id}`, {
-          headers: { Authorization: token ? `Bearer ${token}` : "" },
-        });
-        if (res.ok) {
-          const data = await res.json();
+        const data = await apiClient(`/api/cart?userId=${user.id}`);
+        if (data && !data.error) {
           dispatch({ type: "SET_CART", payload: data.data || [] });
         }
       } else {

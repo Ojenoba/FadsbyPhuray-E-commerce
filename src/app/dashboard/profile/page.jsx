@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Plus, Edit2, Trash2 } from "lucide-react";
 import useUser from "@/utils/useUser";
+import { useApiClient } from "@/utils/apiClient";
 
 export default function ProfilePage() {
   const { data: user, loading, refetch } = useUser();
+  const { apiClient } = useApiClient();
   const [addresses, setAddresses] = useState([]);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
@@ -32,9 +34,8 @@ export default function ProfilePage() {
 
   const fetchAddresses = async () => {
     try {
-      const res = await fetch("/api/addresses");
-      if (res.ok) {
-        const data = await res.json();
+      const data = await apiClient("/api/addresses");
+      if (data && !data.error) {
         setAddresses(data.addresses || []);
       }
     } catch (error) {
@@ -51,17 +52,11 @@ export default function ProfilePage() {
 
     try {
       const method = editingAddress ? "PUT" : "POST";
-      const url = editingAddress
-        ? `/api/addresses/${editingAddress.id}`
-        : "/api/addresses";
+      const endpoint = editingAddress ? `/api/addresses/${editingAddress.id}` : "/api/addresses";
 
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const data = await apiClient(endpoint, { method, body: JSON.stringify(formData) });
 
-      if (res.ok) {
+      if (data && !data.error) {
         alert(editingAddress ? "Address updated!" : "Address added!");
         setFormData({
           full_name: "",
@@ -100,8 +95,8 @@ export default function ProfilePage() {
     if (!confirm("Are you sure you want to delete this address?")) return;
 
     try {
-      const res = await fetch(`/api/addresses/${id}`, { method: "DELETE" });
-      if (res.ok) {
+      const data = await apiClient(`/api/addresses/${id}`, { method: "DELETE" });
+      if (data && !data.error) {
         alert("Address deleted!");
         fetchAddresses();
       }
