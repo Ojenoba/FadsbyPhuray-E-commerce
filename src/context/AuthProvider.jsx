@@ -14,8 +14,10 @@ export function AuthProvider({ children }) {
     const fetchSession = async () => {
       try {
         const data = await api.getSession(); // calls /auth/me
+        console.log("✅ Session fetched:", data.user);
         setUser(data.user);
-      } catch {
+      } catch (err) {
+        console.log("⚠️ Session check failed:", err.message);
         setUser(null);
       } finally {
         setLoading(false);
@@ -26,10 +28,19 @@ export function AuthProvider({ children }) {
 
   // 🔑 User login
   const login = async (email, password) => {
-    await api.login({ email, password });
-    const session = await api.getSession();
-    setUser(session.user);
-    return session.user;
+    try {
+      console.log("🔄 Logging in with:", email);
+      const loginRes = await api.login({ email, password });
+      console.log("✅ Login response:", loginRes);
+      
+      const session = await api.getSession();
+      console.log("✅ Session retrieved after login:", session.user);
+      setUser(session.user);
+      return session.user;
+    } catch (err) {
+      console.error("❌ Login error:", err.message);
+      throw err;
+    }
   };
 
   // 🔑 User logout

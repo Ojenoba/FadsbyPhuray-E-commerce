@@ -85,8 +85,13 @@ export const api = {
       body: JSON.stringify({ email, password }),
       credentials: "include", // 🔑 cookie set on login
     });
-    if (!res.ok) throw new Error("Login failed");
-    return res.json();
+    const data = await res.json();
+    if (!res.ok) {
+      console.error("❌ Login API error:", data);
+      throw new Error(data.error || "Login failed");
+    }
+    console.log("✅ Login API success:", data);
+    return data;
   },
 
   register: async ({ username, email, password }) => {
@@ -111,8 +116,13 @@ export const api = {
 
   getSession: async () => {
     const res = await fetch(`${BASE_URL}/auth/me`, { credentials: "include" });
-    if (!res.ok) throw new Error("Session check failed");
-    return res.json();
+    const data = await res.json();
+    if (!res.ok) {
+      console.error("❌ Session check failed:", data);
+      throw new Error(data.error || "Session check failed");
+    }
+    console.log("✅ Session API success:", data);
+    return data;
   },
 
   // 🔑 Admin
