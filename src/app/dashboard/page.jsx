@@ -40,12 +40,14 @@ export default function DashboardPage() {
 
   // Redirect to signin if not logged in (only after loading finishes)
   useEffect(() => {
+    console.log("🔍 Dashboard check - loading:", loading, "isLoggedIn:", isLoggedIn, "user:", user);
     if (!loading && !isLoggedIn) {
+      console.log("❌ User not logged in, redirecting to signin");
       if (typeof window !== "undefined") {
         window.location.href = "/account/signin";
       }
     }
-  }, [loading, isLoggedIn]);
+  }, [loading, isLoggedIn, user]);
 
   // Load dashboard data when logged in
   useEffect(() => {

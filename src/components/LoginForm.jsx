@@ -38,6 +38,7 @@ export default function LoginForm() {
     try {
       // ✅ login now fetches session and sets user in context
       const user = await login(email, password);
+      console.log("✅ User logged in, redirecting...", user);
 
       // Redirect based on role
       if (isAdmin && user.role !== "admin") {
@@ -46,8 +47,15 @@ export default function LoginForm() {
         return;
       }
 
-      router.push(isAdmin ? "/admin/dashboard" : "/dashboard");
+      const redirectPath = isAdmin ? "/admin/dashboard" : "/dashboard";
+      console.log("🔄 Redirecting to:", redirectPath);
+      
+      // Small delay to ensure context state updates
+      setTimeout(() => {
+        router.push(redirectPath);
+      }, 100);
     } catch (err) {
+      console.error("❌ Login form error:", err);
       setError(err.message || "Login failed");
       setErrorType("danger");
     }
