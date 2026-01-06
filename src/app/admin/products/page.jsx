@@ -20,7 +20,6 @@ export default function ProductsAdminPage() {
     category: "",
     stock_quantity: "",
     image_url: "",
-    image_file: null,
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -56,29 +55,11 @@ export default function ProductsAdminPage() {
       const url = editingProduct ? `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}` : `${process.env.NEXT_PUBLIC_API_URL}/api/products`;
       const method = editingProduct ? "PUT" : "POST";
 
-      let body;
-      const headers = {};
-
-      if (productData.image_file) {
-        body = new FormData();
-        // append fields
-        Object.entries(productData).forEach(([k, v]) => {
-          if (k === "image_file") {
-            body.append("image", v);
-          } else {
-            body.append(k, v == null ? "" : String(v));
-          }
-        });
-      } else {
-        body = JSON.stringify(productData);
-        headers["Content-Type"] = "application/json";
-      }
-
       const res = await fetch(url, {
         method,
-        headers,
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body,
+        body: JSON.stringify(productData),
       });
 
       const json = await res.json();
@@ -125,7 +106,6 @@ export default function ProductsAdminPage() {
       category: "",
       stock_quantity: "",
       image_url: "",
-      image_file: null,
     });
     setIsAddingProduct(false);
     setEditingProduct(null);
@@ -141,7 +121,6 @@ export default function ProductsAdminPage() {
       category: product.category ?? "",
       stock_quantity: product.stock_quantity ?? 0,
       image_url: product.image_url ?? "",
-      image_file: null,
     });
     setIsAddingProduct(true);
   };
@@ -302,14 +281,12 @@ export default function ProductsAdminPage() {
                   Product Image
                 </label>
                 <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    setFormData({ ...formData, image_file: e.target.files?.[0] ?? null })
-                  }
-                  className="w-full"
+                  type="url"
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  placeholder="https://example.com/image.jpg"
+                  className="w-full px-4 py-2 border-2 border-[#E8D4C4] rounded-lg focus:outline-none focus:border-[#FF6B35]"
                 />
-                <p className="text-xs text-[#666] mt-2">Upload an image file instead of using a URL.</p>
               </div>
 
               <div className="flex gap-3 pt-4">
