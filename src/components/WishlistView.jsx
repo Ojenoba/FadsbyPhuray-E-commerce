@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useApiClient } from "@/utils/apiClient";
 import { Heart, Trash2 } from "lucide-react";
 import useUser from "@/utils/useUser";
 
@@ -16,6 +15,7 @@ export default function WishlistView() {
       return;
     }
     if (user) fetchWishlist();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loading]);
 
   const fetchWishlist = async () => {
@@ -23,7 +23,9 @@ export default function WishlistView() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/wishlist`, { credentials: "include" });
       if (res.ok) {
         const data = await res.json();
-        setWishlist(data.data || []); // ✅ use data.data
+        setWishlist(data.data || data.wishlist || []);
+      } else {
+        console.error("Failed to fetch wishlist", res.status);
       }
     } catch (error) {
       console.error("Error fetching wishlist:", error);
@@ -52,50 +54,46 @@ export default function WishlistView() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/wishlist/${itemId}`, { method: "DELETE", credentials: "include" });
       if (res.ok) {
-        setWishlist(wishlist.filter((item) => item._id !== itemId));
+        setWishlist((prev) => prev.filter((item) => item._id !== itemId));
       }
     } catch (error) {
       console.error("Error removing from wishlist:", error);
     }
   };
 
-  if (loading) return <div className="text-center py-8">Loading...</div>;
-      const { apiClient } = useApiClient();
-      const data = await apiClient("/wishlist");
-      if (data && !data.success) throw new Error(data.error || "Failed to fetch wishlist");
-      setWishlist((data && (data.data || data.wishlist)) || []);
-  }
+  if (loading || wishlistLoading) return <div className="text-center py-8">Loading...</div>;
 
-  if (wishlist.length === 0) {
+  if (!wishlist || wishlist.length === 0) {
     return (
       <div className="bg-white rounded-lg border-2 border-[#E8D4C4] p-12 text-center">
         <Heart size={48} className="mx-auto text-[#E8D4C4] mb-4" />
         <p className="text-[#666] mb-4">Your wishlist is empty</p>
         <button
           onClick={() => (window.location.href = "/products")}
-      try {
-        const { apiClient } = useApiClient();
-        const resp = await apiClient("/cart", {
-          method: "POST",
-          body: JSON.stringify({ product_id: productId, quantity: 1 }),
-          headers: { "Content-Type": "application/json" },
-        });
-        if (resp && resp.success) alert("Added to cart!");
+          className="px-6 py-2 bg-[#FF6B35] text-white rounded-lg font-semibold"
+        >
+          Browse Products
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {wishlist.map((item) => (
         <div
-          key={item._id} // ✅ use MongoDB _id
+          key={item._id}
           className="bg-white rounded-lg border-2 border-[#E8D4C4] overflow-hidden hover:shadow-lg transition-shadow"
         >
-      try {
-        const { apiClient } = useApiClient();
-        const resp = await apiClient(`/wishlist/${itemId}`, { method: "DELETE" });
-        if (resp && resp.success) setWishlist(wishlist.filter((item) => item._id !== itemId));
+          <a href={`/products/${item.product_id}`}>
+            {item.image_url ? (
+              <img
                 src={item.image_url}
                 alt={item.name}
                 className="w-full h-48 object-cover hover:opacity-90 transition-opacity"
               />
+            ) : (
+              <div className="w-full h-48 flex items-center justify-center bg-gray-100 text-gray-400">No image</div>
             )}
           </a>
           <div className="p-4">
@@ -104,13 +102,9 @@ export default function WishlistView() {
                 {item.name}
               </h3>
             </a>
-            <p className="text-[#666] text-sm mb-3 line-clamp-2">
-              {item.description || "No description available."}
-            </p>
+            <p className="text-[#666] text-sm mb-3 line-clamp-2">{item.description || "No description available."}</p>
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm text-[#FF6B35] font-semibold">
-                {"⭐".repeat(Math.round(item.average_rating || 0))}
-              </span>
+              <span className="text-sm text-[#FF6B35] font-semibold">{"⭐".repeat(Math.round(item.average_rating || 0))}</span>
               <span className="text-xs text-[#999]">({item.rating_count || 0})</span>
             </div>
             <div className="flex items-center justify-between mb-4">
