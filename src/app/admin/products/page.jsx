@@ -22,6 +22,7 @@ export default function ProductsAdminPage() {
     stock_quantity: "",
     images: [],
   });
+  const [files, setFiles] = useState([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -56,14 +57,38 @@ export default function ProductsAdminPage() {
       const url = editingProduct ? `${BASE_URL}/products/${id}` : `${BASE_URL}/products`;
       const method = editingProduct ? "PUT" : "POST";
 
-      // Normalize payload to backend Product model
+      // If files were selected, send multipart/form-data
+      if (productData.files && productData.files.length) {
+        const form = new FormData();
+        form.append("name", productData.name);
+        form.append("description", productData.description);
+        form.append("price", String(Number(productData.price)));
+        form.append("category", productData.category || "");
+        form.append("stock", String(Number(productData.stock_quantity) || 0));
+        // append each file as `images`
+        productData.files.forEach((file) => {
+          form.append("images", file);
+        });
+
+        const res = await fetch(url, {
+          method,
+          credentials: "include",
+          body: form,
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          throw new Error(json.error || "Failed to save product");
+        }
+        return json.data;
+      }
+
+      // Otherwise, send JSON payload (images array or existing links)
       const payload = {
         name: productData.name,
         description: productData.description,
         price: Number(productData.price),
         category: productData.category,
-        // backend expects `images` array and `stock` field
-        images: productData.image_url ? [productData.image_url] : productData.images || [],
+        images: productData.images || [],
         stock: Number(productData.stock_quantity) || Number(productData.stock) || 0,
       };
 
@@ -119,6 +144,7 @@ export default function ProductsAdminPage() {
       stock_quantity: "",
       images: [],
     });
+    setFiles([]);
     setIsAddingProduct(false);
     setEditingProduct(null);
     setError("");
@@ -155,6 +181,7 @@ export default function ProductsAdminPage() {
       ...formData,
       price: priceVal,
       stock_quantity: Number(formData.stock_quantity) || 0,
+      files,
     });
   };
 
@@ -364,15 +391,31 @@ export default function ProductsAdminPage() {
             <div className="p-8 text-center text-[#666]">No products yet. Add your first product!</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-[#FFF5E6] border-b-2 border-[#E8D4C4]">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-semibold text-[#8B4513]">Product</th>
-                    <th className="px-4 py-3 text-left font-semibold text-[#8B4513]">Price</th>
-                    <th className="px-4 py-3 text-left font-semibold text-[#8B4513]">Stock</th>
-                    <th className="px-4 py-3 text-left font-semibold text-[#8B4513]">Category</th>
-                    <th className="px-4 py-3 text-center font-semibold text-[#8B4513]">Actions</th>
-                  </tr>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, images: [...(formData.images || []), ""] })}
+                      className="px-4 py-2 bg-[#FFF5E6] border border-[#E8D4C4] text-[#8B4513] rounded"
+                    >
+                      + Add Image
+                    </button>
+                  </div>
+                </div>
+
+                {/* File upload input */}
+                <div className="mt-3">
+                  <label className="block text-sm font-semibold text-[#8B4513] mb-2">Or upload images</label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => setFiles(Array.from(e.target.files || []))}
+                    className="w-full"
+                  />
+                  {files.length > 0 && (
+                    <p className="text-xs text-[#666] mt-2">{files.length} file(s) selected</p>
+                  )}
+                </div>
                 </thead>
                 <tbody>
                   {products.map((product) => (
