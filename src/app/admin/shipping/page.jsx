@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Edit2, Trash2, Plus, Truck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext"; // custom admin context
+import { BASE_URL } from "@/utils/api";
 
 export default function AdminShippingPage() {
   const { status } = useAdminAuth();
@@ -32,7 +33,7 @@ export default function AdminShippingPage() {
   const fetchShippingRates = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shipping`, { credentials: "include" });
+      const res = await fetch(`${BASE_URL}/shipping`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch shipping rates");
       const data = await res.json();
       setShippingRates(data.rates || []);
@@ -54,8 +55,8 @@ export default function AdminShippingPage() {
     try {
       const method = editingRate ? "PUT" : "POST";
       const url = editingRate
-        ? `${process.env.NEXT_PUBLIC_API_URL}/api/shipping/${editingRate._id || editingRate.id}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/api/shipping`;
+        ? `${BASE_URL}/shipping/${editingRate._id || editingRate.id}`
+        : `${BASE_URL}/shipping`;
 
       const res = await fetch(url, {
         method,
@@ -100,7 +101,7 @@ export default function AdminShippingPage() {
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this shipping rate?")) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shipping/${id}`, {
+      const res = await fetch(`${BASE_URL}/shipping/${id}`, {
         method: "DELETE",
         credentials: "include",
       });

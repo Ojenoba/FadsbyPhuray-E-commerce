@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, Edit2, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext"; // ✅ use your admin auth
+import { BASE_URL } from "@/utils/api"; // use centralized base URL for API
 
 export default function AdminEmailsPage() {
   const { status, admin } = useAdminAuth(); // ✅ replace useSession
@@ -95,7 +96,7 @@ export default function AdminEmailsPage() {
     }
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/emails`, {
+      const res = await fetch(`${BASE_URL}/admin/emails`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

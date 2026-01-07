@@ -5,6 +5,7 @@ import { Plus, Edit2, Trash2, AlertCircle } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext"; // ✅ admin context
+import { BASE_URL } from "@/utils/api";
 
 export default function ProductsAdminPage() {
   const queryClient = useQueryClient();
@@ -39,7 +40,7 @@ export default function ProductsAdminPage() {
   } = useQuery({
     queryKey: ["admin-products"],
     queryFn: async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, { credentials: "include" });
+      const res = await fetch(`${BASE_URL}/products`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch products");
       const json = await res.json();
       // Backend returns { success, data } — normalize to array
@@ -52,7 +53,7 @@ export default function ProductsAdminPage() {
   const productMutation = useMutation({
     mutationFn: async (productData) => {
       const id = editingProduct?._id || editingProduct?.id;
-      const url = editingProduct ? `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}` : `${process.env.NEXT_PUBLIC_API_URL}/api/products`;
+      const url = editingProduct ? `${BASE_URL}/products/${id}` : `${BASE_URL}/products`;
       const method = editingProduct ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -80,7 +81,7 @@ export default function ProductsAdminPage() {
   // ✅ Delete product mutation
   const deleteMutation = useMutation({
     mutationFn: async (productId) => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products/${productId}`, {
+      const res = await fetch(`${BASE_URL}/products/${productId}`, {
         method: "DELETE",
         credentials: "include",
       });

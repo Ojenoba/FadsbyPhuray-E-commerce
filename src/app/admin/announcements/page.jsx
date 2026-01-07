@@ -5,6 +5,7 @@ import { Plus, Edit2, Trash2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/context/AdminAuthContext";
+import { BASE_URL } from "@/utils/api";
 
 export default function AnnouncementsAdminPage() {
   const queryClient = useQueryClient();
@@ -28,7 +29,7 @@ export default function AnnouncementsAdminPage() {
   const { data: announcements = [], isLoading } = useQuery({
     queryKey: ["admin-announcements"],
     queryFn: async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/announcements`, { credentials: "include" });
+      const res = await fetch(`${BASE_URL}/announcements`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch announcements");
       const json = await res.json();
       return Array.isArray(json) ? json : json.data || [];
@@ -40,8 +41,8 @@ export default function AnnouncementsAdminPage() {
   const announcementMutation = useMutation({
     mutationFn: async (announcementData) => {
       const url = editingAnnouncement
-        ? `${process.env.NEXT_PUBLIC_API_URL}/api/announcements/${editingAnnouncement.id}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/api/announcements`;
+        ? `${BASE_URL}/announcements/${editingAnnouncement.id}`
+        : `${BASE_URL}/announcements`;
       const method = editingAnnouncement ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -66,7 +67,7 @@ export default function AnnouncementsAdminPage() {
   // Delete announcement
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/announcements/${id}`, {
+      const res = await fetch(`${BASE_URL}/announcements/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -85,7 +86,7 @@ export default function AnnouncementsAdminPage() {
   // Toggle active status
   const toggleActiveMutation = useMutation({
     mutationFn: async ({ id, is_active }) => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/announcements/${id}/toggle`, {
+      const res = await fetch(`${BASE_URL}/announcements/${id}/toggle`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
