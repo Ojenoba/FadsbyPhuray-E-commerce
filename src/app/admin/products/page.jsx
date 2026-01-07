@@ -20,7 +20,7 @@ export default function ProductsAdminPage() {
     price: "",
     category: "",
     stock_quantity: "",
-    image_url: "",
+    images: [],
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -56,11 +56,22 @@ export default function ProductsAdminPage() {
       const url = editingProduct ? `${BASE_URL}/products/${id}` : `${BASE_URL}/products`;
       const method = editingProduct ? "PUT" : "POST";
 
+      // Normalize payload to backend Product model
+      const payload = {
+        name: productData.name,
+        description: productData.description,
+        price: Number(productData.price),
+        category: productData.category,
+        // backend expects `images` array and `stock` field
+        images: productData.image_url ? [productData.image_url] : productData.images || [],
+        stock: Number(productData.stock_quantity) || Number(productData.stock) || 0,
+      };
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(productData),
+        body: JSON.stringify(payload),
       });
 
       const json = await res.json();
@@ -106,7 +117,7 @@ export default function ProductsAdminPage() {
       price: "",
       category: "",
       stock_quantity: "",
-      image_url: "",
+      images: [],
     });
     setIsAddingProduct(false);
     setEditingProduct(null);
@@ -120,8 +131,8 @@ export default function ProductsAdminPage() {
       description: product.description ?? "",
       price: product.price ?? "",
       category: product.category ?? "",
-      stock_quantity: product.stock_quantity ?? 0,
-      image_url: product.image_url ?? "",
+      stock_quantity: product.stock_quantity ?? product.stock ?? 0,
+      images: product.images?.length ? product.images : product.image_url ? [product.image_url] : [],
     });
     setIsAddingProduct(true);
   };
@@ -276,18 +287,49 @@ export default function ProductsAdminPage() {
                 />
               </div>
 
-              {/* Image URL */}
+              {/* Images (multiple) */}
               <div>
-                <label className="block text-sm font-semibold text-[#8B4513] mb-2">
-                  Product Image
-                </label>
-                <input
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full px-4 py-2 border-2 border-[#E8D4C4] rounded-lg focus:outline-none focus:border-[#FF6B35]"
-                />
+                <label className="block text-sm font-semibold text-[#8B4513] mb-2">Product Images</label>
+                <div className="space-y-2">
+                  {(formData.images || []).map((img, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        type="url"
+                        value={img}
+                        onChange={(e) => {
+                          const next = [...(formData.images || [])];
+                          next[idx] = e.target.value;
+                          setFormData({ ...formData, images: next });
+                        }}
+                        placeholder={`https://example.com/image-${idx + 1}.jpg`}
+                        className="flex-1 px-4 py-2 border-2 border-[#E8D4C4] rounded-lg focus:outline-none focus:border-[#FF6B35]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = [...(formData.images || [])];
+                          next.splice(idx, 1);
+                          setFormData({ ...formData, images: next });
+                        }}
+                        className="px-3 py-2 bg-red-50 text-red-600 rounded"
+                        aria-label={`Remove image ${idx + 1}`}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, images: [...(formData.images || []), ""] })}
+                      className="px-4 py-2 bg-[#FFF5E6] border border-[#E8D4C4] text-[#8B4513] rounded"
+                    >
+                      + Add Image
+                    </button>
+                  </div>
+                </div>
+                <p className="text-xs text-[#999] mt-2">You can add multiple image URLs. First image will be used as the primary.</p>
               </div>
 
               <div className="flex gap-3 pt-4">
