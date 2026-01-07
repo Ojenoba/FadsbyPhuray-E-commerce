@@ -1,6 +1,6 @@
 const rawBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const host = rawBase.replace(/\/$/, "");
-const BASE_URL = host.endsWith("/api") ? host : `${host}/api`;
+export const BASE_URL = host.endsWith("/api") ? host : `${host}/api`;
 
 export const api = {
   // 🛍 Products
